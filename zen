@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        .main-btn { background-color: #007bff; color: white; }
+        .aura-btn { background-color: #28a745; color: white; }
+        .option-btn { background-color: #dc3545; color: white; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Zen Hub</h1>
+
+    <button class="button main-btn" onclick="openMain()">Main</button>
+
+    <div id="mainHub" class="hidden">
+        <button class="button aura-btn" onclick="openAuraKill()">Aura Kill</button>
+    </div>
+
+    <div id="auraKillOptions" class="hidden">
+        <p>Activate Aura Kill?</p>
+        <button class="button option-btn" onclick="activateAuraKill()">Use</button>
+        <button class="button option-btn" onclick="closeAuraKill()">Not</button>
+    </div>
+
+    <script>
+        function openMain() {
+            document.getElementById("mainHub").classList.toggle("hidden");
+        }
+
+        function openAuraKill() {
+            document.getElementById("auraKillOptions").classList.toggle("hidden");
+        }
+
+        function activateAuraKill() {
+            alert("Aura Kill Activated!");
+        }
+
+        function closeAuraKill() {
+            document.getElementById("auraKillOptions").classList.add("hidden");
+        }
+    </script>
+
+</body>
+</html>

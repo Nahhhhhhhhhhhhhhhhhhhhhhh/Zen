@@ -1,14 +1,151 @@
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+-- Create Thunder Hub GUI
+local ThunderHubGui = Instance.new("ScreenGui")
+ThunderHubGui.Name = "ThunderHubGui"
+ThunderHubGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ThunderHubGui.ResetOnSpawn = false
 
--- Create Main Button
-local mainButton = Instance.new("TextButton", gui)
-mainButton.Size = UDim2.new(0, 200, 0, 50)
-mainButton.Position = UDim2.new(0.4, 0, 0.3, 0)
-mainButton.Text = "Main"
-mainButton.BackgroundColor3 = Color3.fromRGB(0, 122, 255)
+-- Create Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 450, 0, 350)
+MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ThunderHubGui
 
--- Create Aura Kill Button (Hidden by Default)
-local auraKillButton = Instance.new("TextButton", gui)
-auraKillButton.Size = UDim2.new(0, 200, 0, 50)
-auraKillButton.Position
+-- Draggable GUI
+local UIS = game:GetService("UserInputService")
+local dragToggle, dragStart, startPos
+
+local function updateDrag(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragToggle = false
+            end
+        end)
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragToggle and input.UserInputType == Enum.UserInputType.MouseMovement then
+        updateDrag(input)
+    end
+end)
+
+-- Sidebar
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 130, 1, 0)
+Sidebar.Position = UDim2.new(0, 0, 0, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Sidebar.Parent = MainFrame
+
+-- Category Buttons
+local categories = {"Main", "Misc", "Server"}
+local categoryFrames = {}
+
+for i, category in ipairs(categories) do
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(1, -10, 0, 30)
+    Button.Position = UDim2.new(0, 5, 0, (i - 1) * 35 + 10)
+    Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Text = category
+    Button.Font = Enum.Font.Gotham
+    Button.TextSize = 14
+    Button.Parent = Sidebar
+
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(1, -130, 1, -40)
+    Frame.Position = UDim2.new(0, 130, 0, 10)
+    Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    Frame.Parent = MainFrame
+    Frame.Visible = false
+    categoryFrames[category] = Frame
+
+    Button.MouseButton1Click:Connect(function()
+        for _, f in pairs(categoryFrames) do f.Visible = false end
+        Frame.Visible = true
+    end)
+end
+
+categoryFrames["Main"].Visible = true
+
+-- Kill Aura (Shovel Only)
+local KillAuraEnabled = false
+local KillAuraSize = 10
+
+local KillAuraButton = Instance.new("TextButton")
+KillAuraButton.Size = UDim2.new(0, 200, 0, 30)
+KillAuraButton.Position = UDim2.new(0.1, 0, 0.1, 0)
+KillAuraButton.Text = "Shovel Kill Aura (OFF)"
+KillAuraButton.Parent = categoryFrames["Main"]
+
+KillAuraButton.MouseButton1Click:Connect(function()
+    KillAuraEnabled = not KillAuraEnabled
+    KillAuraButton.Text = "Shovel Kill Aura (" .. (KillAuraEnabled and "ON" or "OFF") .. ")"
+end)
+
+-- Kill Aura Functionality
+game:GetService("RunService").Stepped:Connect(function()
+    if KillAuraEnabled then
+        for _, enemy in pairs(game.Workspace:GetChildren()) do
+            if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") then
+                local player = game.Players.LocalPlayer
+                local char = player.Character
+                if char and char:FindFirstChild("Shovel") and (char.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).magnitude < KillAuraSize then
+                    enemy.Humanoid.Health = 0
+                end
+            end
+        end
+    end
+end)
+
+-- Aimbot with FOV Circle
+local AimbotEnabled = false
+local AimbotFOV = 100
+local AimbotTarget = "Head"
+
+local AimbotButton = Instance.new("TextButton")
+AimbotButton.Size = UDim2.new(0, 200, 0, 30)
+AimbotButton.Position = UDim2.new(0.1, 0, 0.2, 0)
+AimbotButton.Text = "Aimbot (OFF)"
+AimbotButton.Parent = categoryFrames["Main"]
+
+AimbotButton.MouseButton1Click:Connect(function()
+    AimbotEnabled = not AimbotEnabled
+    AimbotButton.Text = "Aimbot (" .. (AimbotEnabled and "ON" or "OFF") .. ")"
+end)
+
+-- ESP for Enemies, Items, Players
+local ESPEnabled = false
+
+local ESPButton = Instance.new("TextButton")
+ESPButton.Size = UDim2.new(0, 200, 0, 30)
+ESPButton.Position = UDim2.new(0.1, 0, 0.3, 0)
+ESPButton.Text = "ESP (OFF)"
+ESPButton.Parent = categoryFrames["Main"]
+
+ESPButton.MouseButton1Click:Connect(function()
+    ESPEnabled = not ESPEnabled
+    ESPButton.Text = "ESP (" .. (ESPEnabled and "ON" or "OFF") .. ")"
+end)
+
+-- Noclip
+local NoclipEnabled = false
+
+local NoclipButton = Instance.new("TextButton")
+NoclipButton.Size = UDim2.new(0, 200, 0, 30)
+NoclipButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+NoclipButton.Text = "Noclip (OFF)"
+NoclipButton.Parent = categoryFrames["Main"]
+
+NoclipButton.MouseButton1Click:Connect(function()
+    NoclipEn
